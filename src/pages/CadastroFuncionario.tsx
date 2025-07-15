@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import Webcam from "react-webcam"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
 
 interface FuncionarioData {
   // Dados pessoais
@@ -68,19 +69,22 @@ export default function CadastroFuncionario() {
   const webcamRef = useRef<Webcam>(null)
   const { toast } = useToast()
 
-  // TODO: Dados virão do Supabase
+  // Dados dos cargos e setores
   const cargos = [
-    { id: "1", nome: "Assistente Administrativo" },
-    { id: "2", nome: "Auxiliar de Serviços Gerais" },
-    { id: "3", nome: "Enfermeiro" },
-    { id: "4", nome: "Professor" }
+    { id: "analista", nome: "Analista" },
+    { id: "desenvolvedor", nome: "Desenvolvedor" },
+    { id: "gerente", nome: "Gerente" },
+    { id: "coordenador", nome: "Coordenador" },
+    { id: "assistente", nome: "Assistente" },
+    { id: "diretor", nome: "Diretor" }
   ]
 
   const setores = [
-    { id: "1", nome: "Administração" },
-    { id: "2", nome: "Saúde" },
-    { id: "3", nome: "Educação" },
-    { id: "4", nome: "Obras" }
+    { id: "35419ed7-312b-458f-a4c9-2755325a6818", nome: "Recursos Humanos" },
+    { id: "fcc76751-4c50-4ea7-bd3a-e0e81b8f0d08", nome: "Tecnologia da Informação" },
+    { id: "37b84114-28c6-464a-a218-3103803b14bc", nome: "Financeiro" },
+    { id: "b5081e9d-d79f-459d-9903-a351e743e3ce", nome: "Vendas" },
+    { id: "aee02d1b-f052-4c3f-b559-9e6223bc084b", nome: "Marketing" }
   ]
 
   const indicadores = [
@@ -133,8 +137,34 @@ export default function CadastroFuncionario() {
   const handleSubmit = async () => {
     setIsLoading(true)
     try {
-      // TODO: Implementar salvamento no Supabase
-      console.log("Dados do funcionário:", funcionario)
+      // Preparar dados para inserção
+      const dadosFuncionario = {
+        nome: funcionario.nome,
+        cpf: funcionario.cpf,
+        rg: funcionario.rg || null,
+        data_nascimento: funcionario.dataNascimento || null,
+        email: funcionario.email || null,
+        telefone: funcionario.telefoneCelular || funcionario.telefoneFixo || null,
+        endereco: funcionario.endereco || null,
+        cargo: cargos.find(c => c.id === funcionario.cargoId)?.nome || 'Não informado',
+        departamento_id: funcionario.setorId || null,
+        salario: funcionario.salario ? parseFloat(funcionario.salario.replace(/[^\d.,]/g, '').replace(',', '.')) : null,
+        data_admissao: funcionario.dataAdmissao || new Date().toISOString().split('T')[0],
+        status: 'ativo',
+        foto_url: funcionario.foto || null,
+        observacoes: funcionario.observacoesIndicacao || null
+      }
+
+      const { data, error } = await supabase
+        .from('funcionarios')
+        .insert([dadosFuncionario])
+        .select()
+
+      if (error) {
+        throw error
+      }
+
+      console.log("Funcionário salvo:", data)
       
       toast({
         title: "Funcionário cadastrado!",
