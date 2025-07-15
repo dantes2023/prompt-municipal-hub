@@ -137,6 +137,8 @@ export default function CadastroFuncionario() {
   const handleSubmit = async () => {
     setIsLoading(true)
     try {
+      console.log("Iniciando cadastro com dados:", funcionario)
+      
       // Preparar dados para inserção
       const dadosFuncionario = {
         nome: funcionario.nome,
@@ -155,16 +157,19 @@ export default function CadastroFuncionario() {
         observacoes: funcionario.observacoesIndicacao || null
       }
 
+      console.log("Dados preparados para inserção:", dadosFuncionario)
+
       const { data, error } = await supabase
         .from('funcionarios')
         .insert([dadosFuncionario])
         .select()
 
       if (error) {
+        console.error("Erro do Supabase:", error)
         throw error
       }
 
-      console.log("Funcionário salvo:", data)
+      console.log("Funcionário salvo com sucesso:", data)
       
       toast({
         title: "Funcionário cadastrado!",
@@ -175,6 +180,7 @@ export default function CadastroFuncionario() {
       setFuncionario(initialData)
       setCurrentStep(1)
     } catch (error) {
+      console.error("Erro completo:", error)
       toast({
         title: "Erro ao cadastrar",
         description: "Ocorreu um erro ao cadastrar o funcionário.",
