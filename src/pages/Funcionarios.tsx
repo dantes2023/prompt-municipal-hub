@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,99 +30,119 @@ import {
   Users
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 interface Funcionario {
   id: string
   nome: string
   cpf: string
-  matricula: string
+  rg?: string
+  email?: string
+  telefone?: string
+  endereco?: string
   cargo: string
-  setor: string
-  indicador: string
-  tipoContrato: string
-  dataAdmissao: string
-  ativo: boolean
-  foto?: string
+  departamento_id?: string
+  departamento?: {
+    nome: string
+  }
+  salario?: number
+  data_admissao: string
+  data_nascimento?: string
+  status: string
+  foto_url?: string
+  observacoes?: string
+  created_at: string
+  updated_at: string
+}
+
+interface Departamento {
+  id: string
+  nome: string
+  descricao?: string
 }
 
 export default function Funcionarios() {
   const [searchTerm, setSearchTerm] = useState("")
   const [setorFilter, setSetorFilter] = useState("")
   const [tipoContratoFilter, setTipoContratoFilter] = useState("")
+  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([])
+  const [departamentos, setDepartamentos] = useState<Departamento[]>([])
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const { toast } = useToast()
 
-  // TODO: Dados virão do Supabase
-  const funcionarios: Funcionario[] = [
-    {
-      id: "1",
-      nome: "João Silva Santos",
-      cpf: "123.456.789-00",
-      matricula: "2024001",
-      cargo: "Assistente Administrativo",
-      setor: "Administração",
-      indicador: "Prefeito Municipal",
-      tipoContrato: "efetivo",
-      dataAdmissao: "2024-01-15",
-      ativo: true
-    },
-    {
-      id: "2",
-      nome: "Maria Oliveira Costa",
-      cpf: "987.654.321-00",
-      matricula: "2024002",
-      cargo: "Enfermeira",
-      setor: "Saúde",
-      indicador: "Vereador João Silva",
-      tipoContrato: "comissionado",
-      dataAdmissao: "2024-02-01",
-      ativo: true
-    },
-    {
-      id: "3",
-      nome: "Carlos Pereira Lima",
-      cpf: "456.789.123-00",
-      matricula: "2024003",
-      cargo: "Professor",
-      setor: "Educação",
-      indicador: "Vereadora Maria Santos",
-      tipoContrato: "temporario",
-      dataAdmissao: "2024-03-10",
-      ativo: false
+  // Buscar funcionários do Supabase
+  const fetchFuncionarios = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('funcionarios')
+        .select(`
+          *,
+          departamento:departamentos(nome)
+        `)
+        .order('nome')
+
+      if (error) throw error
+      setFuncionarios(data || [])
+    } catch (error) {
+      console.error('Erro ao buscar funcionários:', error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os funcionários.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
-  const setores = ["Administração", "Saúde", "Educação", "Obras", "Meio Ambiente"]
-  const tiposContrato = ["efetivo", "comissionado", "temporario"]
+  // Buscar departamentos
+  const fetchDepartamentos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('departamentos')
+        .select('*')
+        .order('nome')
 
+      if (error) throw error
+      setDepartamentos(data || [])
+    } catch (error) {
+      console.error('Erro ao buscar departamentos:', error)
+    }
+  }
+
+  // Carregar dados ao montar o componente
+  useEffect(() => {
+    fetchFuncionarios()
+    fetchDepartamentos()
+  }, [])
+  // Atualizar a lógica de filtros para usar a nova estrutura do banco
   const filteredFuncionarios = funcionarios.filter(funcionario => {
     const matchesSearch = funcionario.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          funcionario.cpf.includes(searchTerm) ||
-                         funcionario.matricula.includes(searchTerm)
-    const matchesSetor = !setorFilter || setorFilter === "all" || funcionario.setor === setorFilter
-    const matchesTipo = !tipoContratoFilter || tipoContratoFilter === "all" || funcionario.tipoContrato === tipoContratoFilter
+                         funcionario.id.includes(searchTerm)
+    const matchesSetor = !setorFilter || setorFilter === "all" || funcionario.departamento?.nome === setorFilter
+    const matchesTipo = !tipoContratoFilter || tipoContratoFilter === "all" || funcionario.status === tipoContratoFilter
     
     return matchesSearch && matchesSetor && matchesTipo
   })
 
-  const getTipoContratoBadge = (tipo: string) => {
-    const variants = {
-      efetivo: "default",
-      comissionado: "secondary", 
-      temporario: "outline"
-    } as const
-    
-    return (
-      <Badge variant={variants[tipo as keyof typeof variants] || "default"}>
-        {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-      </Badge>
-    )
-  }
-
-  const getStatusBadge = (ativo: boolean) => (
-    <Badge variant={ativo ? "default" : "destructive"}>
-      {ativo ? "Ativo" : "Inativo"}
+  const getStatusBadge = (status: string) => (
+    <Badge variant={status === 'ativo' ? "default" : "destructive"}>
+      {status === 'ativo' ? "Ativo" : "Inativo"}
     </Badge>
   )
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Carregando funcionários...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -154,7 +174,7 @@ export default function Funcionarios() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-success">
-              {funcionarios.filter(f => f.ativo).length}
+              {funcionarios.filter(f => f.status === 'ativo').length}
             </div>
             <p className="text-sm text-muted-foreground">Ativos</p>
           </CardContent>
@@ -162,7 +182,7 @@ export default function Funcionarios() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-destructive">
-              {funcionarios.filter(f => !f.ativo).length}
+              {funcionarios.filter(f => f.status === 'inativo').length}
             </div>
             <p className="text-sm text-muted-foreground">Inativos</p>
           </CardContent>
@@ -170,9 +190,9 @@ export default function Funcionarios() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-warning">
-              {funcionarios.filter(f => f.tipoContrato === 'temporario').length}
+              {funcionarios.filter(f => f.salario && f.salario > 0).length}
             </div>
-            <p className="text-sm text-muted-foreground">Temporários</p>
+            <p className="text-sm text-muted-foreground">Com Salário</p>
           </CardContent>
         </Card>
       </div>
@@ -191,7 +211,7 @@ export default function Funcionarios() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Buscar por nome, CPF ou matrícula..."
+                  placeholder="Buscar por nome, CPF ou ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -204,22 +224,21 @@ export default function Funcionarios() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os setores</SelectItem>
-                {setores.map(setor => (
-                  <SelectItem key={setor} value={setor}>{setor}</SelectItem>
+                {departamentos.map(departamento => (
+                  <SelectItem key={departamento.id} value={departamento.nome}>
+                    {departamento.nome}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={tipoContratoFilter} onValueChange={setTipoContratoFilter}>
               <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Tipo de contrato" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os tipos</SelectItem>
-                {tiposContrato.map(tipo => (
-                  <SelectItem key={tipo} value={tipo}>
-                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                  </SelectItem>
-                ))}
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="ativo">Ativo</SelectItem>
+                <SelectItem value="inativo">Inativo</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" className="flex items-center gap-2">
@@ -250,11 +269,10 @@ export default function Funcionarios() {
                 <TableRow>
                   <TableHead>Foto</TableHead>
                   <TableHead>Nome</TableHead>
-                  <TableHead>Matrícula</TableHead>
+                  <TableHead>CPF</TableHead>
                   <TableHead>Cargo</TableHead>
-                  <TableHead>Setor</TableHead>
-                  <TableHead>Indicador</TableHead>
-                  <TableHead>Tipo</TableHead>
+                  <TableHead>Departamento</TableHead>
+                  <TableHead>Salário</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Admissão</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -265,9 +283,9 @@ export default function Funcionarios() {
                   <TableRow key={funcionario.id}>
                     <TableCell>
                       <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                        {funcionario.foto ? (
+                        {funcionario.foto_url ? (
                           <img 
-                            src={funcionario.foto} 
+                            src={funcionario.foto_url} 
                             alt={funcionario.nome}
                             className="w-10 h-10 rounded-full object-cover"
                           />
@@ -281,19 +299,20 @@ export default function Funcionarios() {
                     <TableCell>
                       <div>
                         <p className="font-medium">{funcionario.nome}</p>
-                        <p className="text-sm text-muted-foreground">{funcionario.cpf}</p>
+                        <p className="text-sm text-muted-foreground">{funcionario.email}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono">{funcionario.matricula}</TableCell>
+                    <TableCell className="font-mono">{funcionario.cpf}</TableCell>
                     <TableCell>{funcionario.cargo}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{funcionario.setor}</Badge>
+                      <Badge variant="outline">{funcionario.departamento?.nome || 'Sem departamento'}</Badge>
                     </TableCell>
-                    <TableCell className="text-sm">{funcionario.indicador}</TableCell>
-                    <TableCell>{getTipoContratoBadge(funcionario.tipoContrato)}</TableCell>
-                    <TableCell>{getStatusBadge(funcionario.ativo)}</TableCell>
                     <TableCell>
-                      {new Date(funcionario.dataAdmissao).toLocaleDateString('pt-BR')}
+                      {funcionario.salario ? `R$ ${funcionario.salario.toLocaleString('pt-BR')}` : '-'}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(funcionario.status)}</TableCell>
+                    <TableCell>
+                      {new Date(funcionario.data_admissao).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
