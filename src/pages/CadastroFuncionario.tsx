@@ -153,7 +153,7 @@ export default function CadastroFuncionario() {
         salario: funcionario.salario ? parseFloat(funcionario.salario.replace(/[^\d.,]/g, '').replace(',', '.')) : null,
         data_admissao: funcionario.dataAdmissao || new Date().toISOString().split('T')[0],
         status: 'ativo',
-        foto_url: funcionario.foto || null,
+        foto_url: funcionario.foto, // Armazena a foto em base64
         observacoes: funcionario.observacoesIndicacao || null
       }
 
