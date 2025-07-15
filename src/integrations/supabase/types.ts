@@ -14,192 +14,122 @@ export type Database = {
   }
   public: {
     Tables: {
-      appointments: {
+      departamentos: {
         Row: {
-          appointment_date: string
-          appointment_time: string
-          client_name: string | null
-          created_at: string | null
-          id: string
-          notes: string | null
-          phone_number: string
-          professional_name: string | null
-          reminder_sent: boolean | null
-          reminder_sent_at: string | null
-          service_name: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          appointment_date: string
-          appointment_time: string
-          client_name?: string | null
-          created_at?: string | null
-          id?: string
-          notes?: string | null
-          phone_number: string
-          professional_name?: string | null
-          reminder_sent?: boolean | null
-          reminder_sent_at?: string | null
-          service_name?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          appointment_date?: string
-          appointment_time?: string
-          client_name?: string | null
-          created_at?: string | null
-          id?: string
-          notes?: string | null
-          phone_number?: string
-          professional_name?: string | null
-          reminder_sent?: boolean | null
-          reminder_sent_at?: string | null
-          service_name?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      conversation_history: {
-        Row: {
-          created_at: string | null
-          id: string
-          is_audio: boolean | null
-          message_content: string | null
-          message_type: string | null
-          phone_number: string
-          user_name: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          is_audio?: boolean | null
-          message_content?: string | null
-          message_type?: string | null
-          phone_number: string
-          user_name?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          is_audio?: boolean | null
-          message_content?: string | null
-          message_type?: string | null
-          phone_number?: string
-          user_name?: string | null
-        }
-        Relationships: []
-      }
-      LeadsDesafioIA: {
-        Row: {
-          atendimentoFinalizado: boolean | null
-          conversation_history: Json | null
-          id: number
-          remotejid: string | null
-          response_id: string | null
-          timestamp: string | null
-          tokens: number | null
-        }
-        Insert: {
-          atendimentoFinalizado?: boolean | null
-          conversation_history?: Json | null
-          id?: number
-          remotejid?: string | null
-          response_id?: string | null
-          timestamp?: string | null
-          tokens?: number | null
-        }
-        Update: {
-          atendimentoFinalizado?: boolean | null
-          conversation_history?: Json | null
-          id?: number
-          remotejid?: string | null
-          response_id?: string | null
-          timestamp?: string | null
-          tokens?: number | null
-        }
-        Relationships: []
-      }
-      LeadsIA7D: {
-        Row: {
-          atendimentoFinalizado: boolean | null
-          conversation_history: Json | null
-          id: number
-          nome: string | null
-          remotejid: string | null
-          response_id: string | null
-          timestamp: string | null
-          tokens: number | null
-        }
-        Insert: {
-          atendimentoFinalizado?: boolean | null
-          conversation_history?: Json | null
-          id?: number
-          nome?: string | null
-          remotejid?: string | null
-          response_id?: string | null
-          timestamp?: string | null
-          tokens?: number | null
-        }
-        Update: {
-          atendimentoFinalizado?: boolean | null
-          conversation_history?: Json | null
-          id?: number
-          nome?: string | null
-          remotejid?: string | null
-          response_id?: string | null
-          timestamp?: string | null
-          tokens?: number | null
-        }
-        Relationships: []
-      }
-      Tools_DesafioIA: {
-        Row: {
+          created_at: string
           descricao: string | null
-          id: number
-          nome: string | null
-          tool: Json | null
-          type: string | null
+          id: string
+          nome: string
+          updated_at: string
         }
         Insert: {
+          created_at?: string
           descricao?: string | null
-          id?: number
-          nome?: string | null
-          tool?: Json | null
-          type?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
         }
         Update: {
+          created_at?: string
           descricao?: string | null
-          id?: number
-          nome?: string | null
-          tool?: Json | null
-          type?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
         }
         Relationships: []
       }
-      Tools_IA7D: {
+      funcionarios: {
         Row: {
-          descricao: string | null
-          id: number
-          nome: string | null
-          tool: Json | null
-          type: string | null
+          cargo: string
+          cpf: string
+          created_at: string
+          data_admissao: string
+          data_nascimento: string | null
+          departamento_id: string | null
+          email: string | null
+          endereco: string | null
+          foto_url: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          rg: string | null
+          salario: number | null
+          status: string
+          telefone: string | null
+          updated_at: string
         }
         Insert: {
-          descricao?: string | null
-          id?: number
-          nome?: string | null
-          tool?: Json | null
-          type?: string | null
+          cargo: string
+          cpf: string
+          created_at?: string
+          data_admissao?: string
+          data_nascimento?: string | null
+          departamento_id?: string | null
+          email?: string | null
+          endereco?: string | null
+          foto_url?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          rg?: string | null
+          salario?: number | null
+          status?: string
+          telefone?: string | null
+          updated_at?: string
         }
         Update: {
-          descricao?: string | null
-          id?: number
+          cargo?: string
+          cpf?: string
+          created_at?: string
+          data_admissao?: string
+          data_nascimento?: string | null
+          departamento_id?: string | null
+          email?: string | null
+          endereco?: string | null
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          rg?: string | null
+          salario?: number | null
+          status?: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funcionarios_departamento_id_fkey"
+            columns: ["departamento_id"]
+            isOneToOne: false
+            referencedRelation: "departamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          nome: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
           nome?: string | null
-          tool?: Json | null
-          type?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          nome?: string | null
+          role?: string
+          updated_at?: string
         }
         Relationships: []
       }
