@@ -98,8 +98,8 @@ export default function Funcionarios() {
     const matchesSearch = funcionario.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          funcionario.cpf.includes(searchTerm) ||
                          funcionario.matricula.includes(searchTerm)
-    const matchesSetor = !setorFilter || funcionario.setor === setorFilter
-    const matchesTipo = !tipoContratoFilter || funcionario.tipoContrato === tipoContratoFilter
+    const matchesSetor = !setorFilter || setorFilter === "all" || funcionario.setor === setorFilter
+    const matchesTipo = !tipoContratoFilter || tipoContratoFilter === "all" || funcionario.tipoContrato === tipoContratoFilter
     
     return matchesSearch && matchesSetor && matchesTipo
   })
@@ -203,7 +203,7 @@ export default function Funcionarios() {
                 <SelectValue placeholder="Setor" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os setores</SelectItem>
+                <SelectItem value="all">Todos os setores</SelectItem>
                 {setores.map(setor => (
                   <SelectItem key={setor} value={setor}>{setor}</SelectItem>
                 ))}
@@ -214,7 +214,7 @@ export default function Funcionarios() {
                 <SelectValue placeholder="Tipo de contrato" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os tipos</SelectItem>
+                <SelectItem value="all">Todos os tipos</SelectItem>
                 {tiposContrato.map(tipo => (
                   <SelectItem key={tipo} value={tipo}>
                     {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
